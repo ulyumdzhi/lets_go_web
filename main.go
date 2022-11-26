@@ -1,15 +1,35 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"net/http"
 )
 
-func main() {
-	http.HandleFunc("/", HelloServer)
-	http.ListenAndServe(":3456", nil)
+type Todo struct {
+	Title string
+	Done  bool
 }
 
-func HelloServer(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
+type TodoPageData struct {
+	PageTitle string
+	Todos     []Todo
+}
+
+func main() {
+
+	tmpl := template.Must(template.ParseFiles("templates/index.html"))
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		data := TodoPageData{
+			PageTitle: "My TODO list",
+			Todos: []Todo{
+				{Title: "Task 1", Done: false},
+				{Title: "Task 2", Done: true},
+				{Title: "Task 3", Done: true},
+			},
+		}
+		tmpl.Execute(w, data)
+	})
+
+	http.ListenAndServe(":8000", nil)
 }
